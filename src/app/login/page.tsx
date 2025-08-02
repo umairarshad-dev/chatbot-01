@@ -249,7 +249,11 @@ export default function LoginPage() {
             <button
               type="button"
               className="font-semibold text-green-600 hover:text-green-700 hover:underline focus:outline-none transition"
-              onClick={() => { setShowSignup(!showSignup); setError(null); }}
+              onClick={() => { 
+                setShowSignup(!showSignup); 
+                setError(null); 
+                setSuccessMessage(null); // <-- Add this line to clear the success message
+              }}
             >
               {showSignup ? 'Log In' : 'Create an account'}
             </button>
