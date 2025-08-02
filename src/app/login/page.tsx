@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { login, signup } from './actions';
-import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { RiRobot3Fill } from 'react-icons/ri';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,10 +16,11 @@ function Spinner() {
   );
 }
 
- function FormInput({ id, name, type, placeholder, icon, label, required = false, value, onChange, onBlur, isValid, isTouched }: { id: string, name: string, type: string, placeholder: string, icon: React.ReactNode, label: string, required?: boolean, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onBlur: (e: React.FocusEvent<HTMLInputElement>) => void, isValid: boolean, isTouched: boolean }) {
+ function FormInput({ id, name, type, placeholder, icon, label, required = false, value, onChange, onBlur, isValid, isTouched, showPassword, onTogglePassword }: { id: string, name: string, type: string, placeholder: string, icon: React.ReactNode, label: string, required?: boolean, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onBlur: (e: React.FocusEvent<HTMLInputElement>) => void, isValid: boolean, isTouched: boolean, showPassword?: boolean, onTogglePassword?: () => void }) {
   const ringColor = isTouched ? (isValid ? 'focus:ring-green-400' : 'focus:ring-red-400') : 'focus:ring-gray-300';
   const borderColor = isTouched ? (isValid ? 'border-green-500' : 'border-red-500') : 'border-gray-300';
-
+  const isPasswordField = name.toLowerCase().includes('password');
+  const inputType = isPasswordField && !showPassword ? 'password' : 'text';
 
   return (
     <div>
@@ -33,14 +34,24 @@ function Spinner() {
         <input
           id={id}
           name={name}
-          type={type}
+          type={inputType}
           required={required}
           value={value}
           onChange={onChange}
           onBlur={onBlur}
-          className={`w-full pl-12 pr-4 py-3 bg-gray-100 border-2 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 ${ringColor} ${borderColor} transition-all`}
+          className={`w-full pl-12 pr-12 py-3 bg-gray-100 border-2 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 ${ringColor} ${borderColor} transition-all`}
           placeholder={placeholder}
         />
+        {isPasswordField && onTogglePassword && (
+          <button
+            type="button"
+            onClick={onTogglePassword}
+            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+            tabIndex={-1}
+          >
+            {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -64,6 +75,8 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [emailValid, setEmailValid] = useState(true);
   const [passwordValid, setPasswordValid] = useState(true);
@@ -72,6 +85,9 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   const validateEmail = (email: string) => {
     // A simple regex for email validation
@@ -112,7 +128,7 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
       <FormInput 
         id={isSignup ? "signup-password" : "password"} 
         name="password" 
-        type="password" 
+        type={showPassword ? "text" : "password"} 
         placeholder="••••••••" 
         icon={<FaLock />} 
         label="Enter your Password" 
@@ -122,12 +138,14 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
         onBlur={() => setPasswordTouched(true)}
         isValid={passwordValid}
         isTouched={passwordTouched}
+        showPassword={showPassword}
+        onTogglePassword={togglePasswordVisibility}
       />
       {isSignup && (
         <FormInput 
           id="confirm-password" 
           name="confirm-password" 
-          type="password" 
+          type={showConfirmPassword ? "text" : "password"} 
           placeholder="••••••••" 
           icon={<FaLock />} 
           label="Confirm your password" 
@@ -137,6 +155,8 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
           onBlur={() => setConfirmPasswordTouched(true)}
           isValid={confirmPasswordValid}
           isTouched={confirmPasswordTouched}
+          showPassword={showConfirmPassword}
+          onTogglePassword={toggleConfirmPasswordVisibility}
         />
       )}
       <FormButton loading={loading} text={isSignup ? "Create an account" : "Log In"} />
