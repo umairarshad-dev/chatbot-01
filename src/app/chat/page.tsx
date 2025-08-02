@@ -226,9 +226,9 @@ export default function ChatPage() {
       </header>
 
       {/* Chat Area */}
-      <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col p-4">
+      <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col px-2 sm:p-4">
         <div 
-          className="flex-1 flex flex-col gap-4 p-6 overflow-y-auto scrollbar-hide" 
+          className="flex-1 flex flex-col gap-3 p-2 sm:p-4 overflow-y-auto scrollbar-hide" 
           style={{ 
             maxHeight: 'calc(100vh - 160px)',
             scrollbarWidth: 'none',
@@ -244,12 +244,12 @@ export default function ChatPage() {
           {showSuggestions ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <h1 className="text-4xl font-bold text-gray-700 mb-4">How can I help?</h1>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 mt-4">
                 {[ 'Write an email', 'Build a website', 'Research a topic', 'Create an image', ].map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => handleSuggestionClick(prompt)}
-                    className="px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700 font-semibold"
+                    className="px-3 py-2 sm:px-4 sm:py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 hover:shadow-md transition-all duration-200 text-gray-700 font-semibold text-sm sm:text-base"
                   >
                     {prompt}
                   </button>
@@ -271,7 +271,7 @@ export default function ChatPage() {
                 </span>
               )}
               <div
-                className={`relative px-4 py-3 rounded-xl max-w-[70%] shadow ${
+                className={`relative px-4 py-3 rounded-xl max-w-[85%] sm:max-w-[70%] shadow ${
                   msg.user.name === demoUser.name
                     ? 'bg-green-500 text-white rounded-br-none'
                     : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'
@@ -304,7 +304,7 @@ export default function ChatPage() {
       <footer className="sticky bottom-0 z-10 bg-white/80 backdrop-blur-sm border-t border-gray-200">
         <form
           onSubmit={handleFormSubmit}
-          className="w-full max-w-4xl mx-auto flex items-center gap-3 p-4"
+          className="w-full max-w-4xl mx-auto flex items-center gap-2 sm:gap-3 p-3 sm:p-4"
         >
           <input
             type="text"
