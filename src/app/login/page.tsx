@@ -16,7 +16,19 @@ function Spinner() {
   );
 }
 
- function FormInput({ id, name, type, placeholder, icon, label, required = false, value, onChange, onBlur, isValid, isTouched, showPassword, onTogglePassword }: { id: string, name: string, type: string, placeholder: string, icon: React.ReactNode, label: string, required?: boolean, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onBlur: (e: React.FocusEvent<HTMLInputElement>) => void, isValid: boolean, isTouched: boolean, showPassword?: boolean, onTogglePassword?: () => void }) {
+ function FormInput({ 
+  id, name, type, placeholder, icon, label, required = false, 
+  value, onChange, onBlur, isValid, isTouched, showPassword, onTogglePassword, 
+  errorMessage = '' 
+}: { 
+  id: string, name: string, type: string, placeholder: string, 
+  icon: React.ReactNode, label: string, required?: boolean, 
+  value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, 
+  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void, 
+  isValid: boolean, isTouched: boolean, showPassword?: boolean, 
+  onTogglePassword?: () => void,
+  errorMessage?: string
+}) {
   const ringColor = isTouched ? (isValid ? 'focus:ring-green-400' : 'focus:ring-red-400') : 'focus:ring-gray-300';
   const borderColor = isTouched ? (isValid ? 'border-green-500' : 'border-red-500') : 'border-gray-300';
   const isPasswordField = name.toLowerCase().includes('password');
@@ -24,9 +36,14 @@ function Spinner() {
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
+      <div className="flex justify-between items-center">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+        {isTouched && errorMessage && (
+          <span className="text-xs text-red-500">{errorMessage}</span>
+        )}
+      </div>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
           {icon}
@@ -78,39 +95,113 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Validation states
   const [emailValid, setEmailValid] = useState(true);
   const [passwordValid, setPasswordValid] = useState(true);
   const [confirmPasswordValid, setConfirmPasswordValid] = useState(true);
 
+  // Touched states
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   
+  // Error messages
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
-  const validateEmail = (email: string) => {
-    // A simple regex for email validation
-    return /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
+  // Validation functions
+  const validateEmail = (email: string): boolean => {
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setEmailError(isValid ? '' : 'Please enter a valid email');
+    return isValid;
   };
 
+  const validatePassword = (password: string): boolean => {
+    if (!password) {
+      setPasswordError('Password is required');
+      return false;
+    }
+    if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  const validateConfirmPassword = (confirmPassword: string): boolean => {
+    if (isSignup) {
+      if (!confirmPassword) {
+        setConfirmPasswordError('Please confirm your password');
+        return false;
+      }
+      if (confirmPassword !== password) {
+        setConfirmPasswordError('Passwords do not match');
+        return false;
+      }
+    }
+    setConfirmPasswordError('');
+    return true;
+  };
+
+  // Event handlers with validation
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    setEmailValid(validateEmail(e.target.value));
+    const value = e.target.value;
+    setEmail(value);
+    if (emailTouched) {
+      validateEmail(value);
+    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    setPasswordValid(e.target.value.length >= 8);
+    const value = e.target.value;
+    setPassword(value);
+    if (passwordTouched) {
+      validatePassword(value);
+      if (isSignup && confirmPassword) {
+        validateConfirmPassword(confirmPassword);
+      }
+    }
   };
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-    setConfirmPasswordValid(e.target.value === password);
+    const value = e.target.value;
+    setConfirmPassword(value);
+    if (confirmPasswordTouched) {
+      validateConfirmPassword(value);
+    }
+  };
+
+  // Validate form on submit
+  const validateForm = (): boolean => {
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    const isConfirmValid = isSignup ? validateConfirmPassword(confirmPassword) : true;
+    
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    if (isSignup) setConfirmPasswordTouched(true);
+    
+    return isEmailValid && isPasswordValid && isConfirmValid;
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(e);
+    }
   };
 
   return (
-    <form className="space-y-5" onSubmit={onSubmit} noValidate>
+    <form className="space-y-5" onSubmit={handleFormSubmit} noValidate>
       <FormInput 
         id={isSignup ? "signup-email" : "email"} 
         name="email" 
@@ -122,8 +213,9 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
         value={email}
         onChange={handleEmailChange}
         onBlur={() => setEmailTouched(true)}
-        isValid={emailValid}
+        isValid={!emailTouched || emailValid}
         isTouched={emailTouched}
+        errorMessage={emailTouched && emailError ? emailError : ''}
       />
       <FormInput 
         id={isSignup ? "signup-password" : "password"} 
@@ -136,10 +228,11 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
         value={password}
         onChange={handlePasswordChange}
         onBlur={() => setPasswordTouched(true)}
-        isValid={passwordValid}
+        isValid={!passwordTouched || passwordValid}
         isTouched={passwordTouched}
         showPassword={showPassword}
         onTogglePassword={togglePasswordVisibility}
+        errorMessage={passwordTouched && passwordError ? passwordError : ''}
       />
       {isSignup && (
         <FormInput 
@@ -153,10 +246,11 @@ function AuthForm({ isSignup, onSubmit, loading }: { isSignup: boolean, onSubmit
           value={confirmPassword}
           onChange={handleConfirmPasswordChange}
           onBlur={() => setConfirmPasswordTouched(true)}
-          isValid={confirmPasswordValid}
+          isValid={!confirmPasswordTouched || confirmPasswordValid}
           isTouched={confirmPasswordTouched}
           showPassword={showConfirmPassword}
           onTogglePassword={toggleConfirmPasswordVisibility}
+          errorMessage={confirmPasswordTouched && confirmPasswordError ? confirmPasswordError : ''}
         />
       )}
       <FormButton loading={loading} text={isSignup ? "Create an account" : "Log In"} />
