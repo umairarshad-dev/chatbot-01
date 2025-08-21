@@ -54,7 +54,7 @@ export default function ChatPage() {
       try {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session?.user) {
           return;
         }
@@ -139,7 +139,7 @@ export default function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-    const sendMessage = async (messageText: string) => {
+  const sendMessage = async (messageText: string) => {
     if (!messageText.trim()) return;
 
     setInput('');
@@ -205,7 +205,7 @@ export default function ChatPage() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Background Pattern */}
       <div className="absolute inset-0 -z-10 h-full w-full bg-white" style={{ backgroundImage: `linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)`, backgroundSize: `20px 20px` }}></div>
-      
+
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b border-gray-200">
         <div className="flex items-center gap-3">
@@ -227,9 +227,9 @@ export default function ChatPage() {
 
       {/* Chat Area */}
       <div className="flex-1 w-full max-w-4xl mx-auto flex flex-col px-2 sm:p-4">
-        <div 
-          className="flex-1 flex flex-col gap-3 p-2 sm:p-4 overflow-y-auto scrollbar-hide" 
-          style={{ 
+        <div
+          className="flex-1 flex flex-col gap-3 p-2 sm:p-4 overflow-y-auto scrollbar-hide"
+          style={{
             maxHeight: 'calc(100vh - 160px)',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
@@ -240,12 +240,12 @@ export default function ChatPage() {
               display: none;
             }
           `}</style>
-          
+
           {showSuggestions ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <h1 className="text-4xl font-bold text-gray-700 mb-4">How can I help?</h1>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 mt-4">
-                {[ 'Write an email', 'Build a website', 'Research a topic', 'Create an image', ].map((prompt) => (
+                {['Write an email', 'Plan my day', 'Research a topic', 'Write a short story',].map((prompt) => (
                   <button
                     key={prompt}
                     onClick={() => handleSuggestionClick(prompt)}
@@ -259,11 +259,10 @@ export default function ChatPage() {
           ) : messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex items-end gap-3 ${
-                msg.user.name === demoUser.name 
-                  ? 'justify-end' 
+              className={`flex items-end gap-3 ${msg.user.name === demoUser.name
+                  ? 'justify-end'
                   : 'justify-start'
-              }`}
+                }`}
             >
               {msg.user.name !== demoUser.name && (
                 <span className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-300">
@@ -271,17 +270,15 @@ export default function ChatPage() {
                 </span>
               )}
               <div
-                className={`relative px-4 py-3 rounded-xl max-w-[85%] sm:max-w-[70%] shadow ${
-                  msg.user.name === demoUser.name
+                className={`relative px-4 py-3 rounded-xl max-w-[85%] sm:max-w-[70%] shadow ${msg.user.name === demoUser.name
                     ? 'bg-green-500 text-white rounded-br-none'
                     : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'
-                }`}
+                  }`}
               >
                 <p className="text-base">{msg.text}</p>
                 <p
-                  className={`text-xs mt-1.5 text-right ${
-                    msg.user.name === demoUser.name ? 'text-green-100' : 'text-gray-400'
-                  }`}
+                  className={`text-xs mt-1.5 text-right ${msg.user.name === demoUser.name ? 'text-green-100' : 'text-gray-400'
+                    }`}
                 >
                   {msg.time}
                 </p>
@@ -293,9 +290,9 @@ export default function ChatPage() {
               )}
             </div>
           ))}
-          
+
           {isTyping && <TypingIndicator />}
-          
+
           <div ref={chatEndRef}></div>
         </div>
       </div>
