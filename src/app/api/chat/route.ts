@@ -25,40 +25,40 @@ export async function POST(req: NextRequest) {
     console.log('User message saved:', userMessage);
   }
 
-  // Call Gemini 2.0 Flash API
-  const geminiRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY!,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: message }],
-          },
-        ],
-      }),
-    }
-  );
+  // Call Claude API
+  const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.CLAUDE_API_KEY!, // set this in your .env
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-haiku-20240307', // or claude-3-opus/sonnet
+      max_tokens: 500,
+      messages: [
+        {
+          role: 'user',
+          content: message,
+        },
+      ],
+    }),
+  });
 
-  if (!geminiRes.ok) {
-    const errText = await geminiRes.text();
-    console.error('Gemini API Error:', errText);
+  if (!claudeRes.ok) {
+    const errText = await claudeRes.text();
+    console.error('Claude API Error:', errText);
     return NextResponse.json(
-      { error: 'Gemini API failed', details: errText },
+      { error: 'Claude API failed', details: errText },
       { status: 500 }
     );
   }
 
-  const geminiData = await geminiRes.json();
-  console.log('Gemini API response:', geminiData);
+  const claudeData = await claudeRes.json();
+  console.log('Claude API response:', claudeData);
 
   const botReply =
-    geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-    'Sorry, no reply.';
+    claudeData?.content?.[0]?.text || 'Sorry, no reply.';
 
   // Store bot reply in Supabase
   const { data: botMessage, error: botMessageError } = await supabase
